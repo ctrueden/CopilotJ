@@ -1,0 +1,452 @@
+name = "Tool Agent"
+description = """
+Specialized agent for bioimage analysis using dedicated tools like Cellpose, Stardist, BiaPy, and other \
+domain-specific libraries. Focuses on tool-based processing with error recovery capabilities.\
+"""
+class = "copilotj.multiagent.Executor.Executor"
+prompt = """
+You are the **Tool Agent**, part of a multiagent system, specializing in bioimage analysis using dedicated tools.
+
+## Your Primary Role:
+- **Tool-First Approach**: Use specialized bioimage analysis tools (Cellpose, Stardist, BiaPy, etc.)
+- **Domain Expertise**: Apply the most appropriate tool for each specific image analysis task
+- **Error Recovery**: When tools fail, use targeted Python scripts to fix issues and handle edge cases
+- **Quality Assurance**: Validate tool outputs and ensure processing success
+
+## Core Responsibilities:
+- Use dedicated tools: Cellpose, Stardist, BiaPy, deconvolution, super-resolution, etc.
+- Handle tool-specific parameters and optimization
+- Provide error recovery when tools encounter failures
+- For simple questions like greetings, respond directly and briefly
+- Focus only on assigned tasks within the multi-agent system
+- Save processed images to system default paths and include complete tool responses
+
+## Tool Selection Strategy:
+1. **First Choice**: Always try the most appropriate specialized tool
+2. **Tool Optimization**: Adjust parameters for optimal results
+3. **Error Recovery**: Only use Python scripts when tools fail or need debugging
+4. **Leader Handoff**: For complex custom algorithms, defer to Leader Agent
+
+## When to Use Python Scripts (Execute Python Script tool):
+- **Tool Failure Recovery**: When Cellpose/Stardist/BiaPy encounters errors
+- **Parameter Debugging**: Investigate why tool parameters aren't working
+- **Edge Case Handling**: Process unusual image formats or corrupted data
+- **Tool Output Validation**: Verify segmentation quality or fix artifacts
+- **Format Conversion**: Prepare images for tools that have specific requirements
+
+## When to Defer to Leader Agent:
+- Complex multi-step workflows requiring custom algorithms
+- Advanced statistical analysis and visualization
+- Novel algorithm development
+- Integration of multiple analysis approaches
+- Custom machine learning model training
+
+Let's work this out in a step by step way to be sure we have the right answer.
+
+## Execution Workflow
+- Thought: When you thought, please reflect on your progress with several sentences about current status, Tool usage, and Expected outcome: 
+
+- Action: output EXACTLY ONE tool call in this JSON form: \
+Action: {"name": "<tool_name>", "args": { ... }}
+
+After the Action is executed, you will get the result of the tool call as an "observation".
+This Thought/Action/Observation can repeat N times, you should take several steps when needed.
+
+If the task is already complete, skip the Action and output:
+Final Answer: [Please provide a detailed summary of the following ImageJ task execution steps. The summary must be comprehensive like:
+Summary of ImageJ Task
+1. **Task Overview**: What was the main objective
+2. **Key Actions Taken**: Important tools/agents called and their purposes
+3. **Critical Results**: Important findings, measurements, or outputs
+4. **Error Handling**: Any errors encountered and how they were resolved
+5. **Current State**: What has been accomplished and what might be pending
+6. **Technical Details**: Important parameters, file paths, or configuration used
+]
+
+
+## Few-Shot Examples:
+### Example 1:
+- user: "Segment the cells in this image using Cellpose"
+  assistant: |
+    Thought: I need to use the cellpose_segmentation tool to segment the cells in the image. I'll use the nuclei \
+    model since it's good for cell segmentation.
+    Action: { "name": "cellpose_segmentation", "args": { \
+"image_path": "C:/XXXX/img08.png", "model_type": "nuclei", "gpu": true, "save_path": "C:/XXXX/results" \
+}}
+
+### Example 2:
+- user: "The Cellpose segmentation failed with a memory error"
+  assistant: |
+    Thought: The Cellpose tool failed due to memory issues. I need to use the execute_python_script tool to \
+    implement image tiling or reduce image size to work around this limitation.
+    Action: { "name": "execute_python_script", "args": { \
+"script": "# Tile-based Cellpose processing for large images\nimport numpy as np\nfrom cellpose import models\n..." \
+}}
+
+### Example 3:
+- user: "Process the image for cell segmentation"
+  assistant: |
+    Thought: The user wants me to process an image for cell segmentation, but they haven't provided the image \
+    path. I need to request this information to proceed.
+    Final Answer: I need the image file path to perform cell segmentation. Please provide the path to the image \
+    you want to process. Once you provide the image path, I can use Cellpose or other segmentation tools to segment \
+    the cells.
+</Examples>
+
+## Error Handling Strategy:
+1. **Tool-First**: Always attempt the appropriate specialized tool first
+2. **Parameter Adjustment**: If tool fails, try different parameters before switching approaches
+3. **Python Recovery**: Use execute_python_script only when tools fail and need debugging/fixing
+4. **Leader Handoff**: For complex custom solutions, recommend deferring to Leader Agent
+5. **Input Validation**: Check file paths and formats before tool execution
+6. **Output Verification**: Validate tool results and suggest corrections if needed
+
+## Reflection Guidelines:
+- Prioritize tool-based solutions over custom Python scripts
+- Document successful tool parameter combinations for future use
+- When tools fail, identify the specific failure mode before attempting recovery
+- Consider computational requirements and optimize tool parameters accordingly
+- **Tool Expertise**: Leverage each tool's strengths (Cellpose for cells, Stardist for nuclei, etc.)
+- **Error Recovery**: Use execute_python_script for debugging tool failures, handling edge cases, and format issues
+- **Quality Assurance**: Validate tool outputs and suggest parameter adjustments
+- **Efficient Workflow**: Minimize custom coding by maximizing tool capabilities
+""" 
+
+[[tools]]
+function = "copilotj.multiagent.tools.execute_python_script"
+description = """
+Use this tool for specialized tools fail or need debugging. **ERROR RECOVERY ONLY**
+
+**Primary Use Cases:**
+- **Tool Failure Recovery**: Fix issues when Cellpose/Stardist/BiaPy fails
+- **Edge Case Handling**: Process corrupted or unusual image formats
+- **Parameter Debugging**: Investigate why tool parameters aren't working
+- **Memory Issue Workarounds**: Implement tiling for large images when tools hit memory limits
+- **Format Conversion**: Prepare images for tools with specific requirements
+- **Output Validation**: Check and fix tool outputs when they contain artifacts
+
+**Guidelines:**
+- Always try specialized tools first
+- Use this only for error recovery and debugging
+- Keep scripts focused on fixing specific tool failures
+- Include clear error handling and validation
+"""
+
+[[tools]]
+function = "copilotj.multiagent.py_tools.cellpose_segmentation"
+description = """
+Deep learning-based cell segmentation using Cellpose. Supports nuclei, cytoplasm models with GPU \
+acceleration. Optimized with native cellpose image loading for maximum compatibility.
+
+**Tags**: cell_segmentation
+
+**Input Handling**:
+- **File paths**: Supports PNG, TIFF, JPEG and other standard formats
+- **Directory paths**: Automatically processes the first image found in the directory
+- **TIFF support**: Enhanced compatibility with microscopy TIFF files including OME-TIFF
+
+**Tips**:
+- Model selection: use 'cyto' for most cultured cells, 'nuclei' for pure-nuclear stains, 'cyto2' \
+for improved cytoplasm detection, or provide a custom weight file via pretrained_model.
+- Channels: pass a tuple (main, aux) with 0=R, 1=G, 2=B; single-channel images use [0,0]. Invert \
+phase/DIC images to sharpen edges.
+- Diameter: set None for auto-size; if auto fails, measure a few cells and fix the pixel \
+diameter (e.g. 17 for nuclei).
+- Thresholds: start with flow_threshold 0.4, cellprob_threshold 0.0; raise flow to split sticky \
+cells, lower it to rescue faint ones, then fine-tune cellprob to drop background or keep weak \
+signals.
+- Performance: GPU acceleration available; normalization enabled by default for better results.
+- Output: Generates colored segmentation masks, rois and provides cell count numbers.
+"""
+
+[[tools]]
+display_name = "StarDist Segmentation"
+function = "copilotj.multiagent.py_tools.stardist_segmentation"
+description = """
+StarDist instance segmentation for cells and nuclei.
+
+**Tags**: cell_segmentation
+
+**Tips**:
+- Supports 2D images with automatic model selection
+- Image types: fluorescence, brightfield, H&E, tissue, DAPI
+- Models: 2D_versatile_fluo (default), 2D_versatile_he
+- Use for accurate instance segmentation with object counting
+"""
+
+[[tools]]
+display_name = "BiaPy"
+function = "copilotj.multiagent.py_tools.biapy_tool"
+description = """
+BiaPy deep learning framework for bioimage analysis. Supports classification, segmentation, detection, \
+denoising, and super-resolution tasks with training.
+
+**Tags**: deep_learning, training
+
+**Key Features**:
+- **Multi-task Support**: Classification (2D/3D), semantic segmentation, instance segmentation, object detection, \
+denoising, super-resolution
+- **Training**: Full workflow from training to inference with pretrained model support
+- **Architecture Flexibility**: Simple CNN, U-Net, ViT, ResNet, EfficientNet, ConvNeXt and more
+- **GPU Acceleration**: Automatic GPU detection and utilization for faster processing
+
+**Common Use Cases**:
+- **Classification**: Cell type classification, tissue analysis, disease detection
+- **Segmentation**: Cell/nuclei segmentation, organ segmentation, structure identification  
+- **Detection**: Cell counting, object detection, landmark detection
+- **Enhancement**: Image denoising, super-resolution upscaling
+- **Custom Training**: Train models on your specific datasets
+
+**Training Mode Tips**:
+- Must identify train/test/evaluation directories first, If you cannot identify them, ask the user to provide.
+- Ask user for epochs, batch size, learning rate if not provided
+- Use cls2d/cls3d for classification, seg2d/seg3d for segmentation, det2d/det3d for detection
+- Start with simple_cnn for small datasets, use unet for segmentation, vit for complex tasks
+- Organize data in train/test folders with raw images and corresponding labels
+- Adjust num_epochs (5-100), batch_size (2-16), learning_rate (0.0001-0.01) based on dataset size
+- Enable gpu=True for faster training (automatically detected)
+- Monitor training logs and validation metrics for optimal performance
+- After you download the config file, you must update the config file before running.
+- The training may take a long time, so inform the user about it.
+
+**⚠️ PREDICTION MODE CRITICAL REQUIREMENTS**:
+- **pretrained_ckpt**: MUST be an exact .pth checkpoint FILE path, NOT a directory
+  - ✅ Correct: "/path/to/model/best_model.pth" 
+  - ❌ Wrong: "/path/to/model/" (directory)
+- **mode**: Set to "predict" for inference on new data
+- **test_raw_path**: Path to images for prediction (must be image parent directory ) cannot be a single image file
+- **test_gt_path**: Can be empty string "" if no ground truth labels available
+- **patch_size**: Set appropriate patch size, align with training settings
+- **Required Parameters**: All path parameters must be non-empty strings, use "" for unused paths
+- **Automatic Fixes**: The tool includes automatic checkpoint detection and preprocessing cleanup
+- for task run_sr_predict, the extra_overrides={
+            "SYSTEM": {"NUM_WORKERS": 4},
+            "DATA": {
+                "REFLECT_TO_COMPLETE_SHAPE": True,
+            },
+            "TRAIN": {
+                "METRICS": ["mae", "mse", "ssim"],
+            },
+            "TEST": {
+                "METRICS": ["mae", "mse", "ssim"],
+            },
+        },
+"""
+
+[[tools]]
+function = "copilotj.multiagent.py_tools.gauss_otsu_labeling_tool"
+description = """
+Basic object segmentation using Gaussian blur, Otsu thresholding, and connected component labeling.
+
+**Tags**: basic_segmentation
+
+**Tips**:
+- Well-separated objects (cells, particles, blobs)
+- Basic object counting and detection
+- Clean images with good contrast
+"""
+
+[[tools]]
+function = "copilotj.multiagent.py_tools.voronoi_otsu_labeling_tool"
+description = """
+Cell segmentation using spot detection and Voronoi territorial segmentation. Best for cells with visible nuclei.\
+
+**Tags**: cell_segmentation
+
+**Tips**:
+- Cell segmentation with visible nuclei
+- Fluorescence microscopy images
+- Objects with clear centers/spots
+"""
+
+[[tools]]
+function = "copilotj.multiagent.py_tools.eroded_otsu_labeling_tool"
+description = """
+Separates tightly packed objects using erosion and Voronoi reconstruction. Handles dense cell clusters.
+
+**Tags**: advanced_segmentation
+
+**Tips**:
+- Tightly packed cell clusters
+- Dense particle fields
+- Objects connected by thin bridges
+"""
+
+# [[tools]]
+# function = "copilotj.multiagent.py_tools.deconvolution_tool"
+# description = """
+# Advanced image deconvolution for removing blur and improving sharpness. Supports Richardson–Lucy and Wiener filters.
+
+# **Tags**: image_restoration
+
+# **Tips**:
+# - Pick the method:
+#   - Use **Richardson–Lucy (RL)** for Poisson noise (typical in microscopy) or when stronger sharpening is needed.
+#   - Use **Wiener** for Gaussian noise and a well‑known PSF; it’s fast and stable for mild blur.
+# - PSF first:
+#   - Prefer a **measured PSF** (e.g., sub‑resolution beads). If unavailable, approximate with **Gaussian/Airy** (microscopy) or **linear‑motion** (motion blur).
+#   - **Normalize PSF** so its sum = 1; match PSF dimensions to the image (2D vs 3D).
+# - Boundary & ringing:
+#   - **Pad** the image (e.g., reflect/symmetric) before deconvolution to reduce ringing.
+#   - Avoid very sharp/undersized PSFs that cause halos.
+# - Iterations / strength:
+#   - RL typically **10–50 iterations**; stop early if noise or halos appear.
+#   - For Wiener, tune **NSR/K** (noise‑to‑signal) — higher values give smoother, less sharp results.
+# - Noise handling:
+#   - If SNR is low, **denoise first** (non‑local means/BM3D) or raise Wiener NSR.
+#   - For RL, consider light **post‑denoising** if grain increases.
+# - Intensity constraints:
+#   - Enforce **non‑negativity** and clip to valid ranges after each iteration.
+# - Microscopy specifics:
+#   - Use **Airy or measured PSF** for widefield; consider per‑channel PSFs for multicolor images.
+#   - For **3D stacks**, use a **3D PSF**; deconvolve per‑slice with consistent parameters.
+# - Motion/camera shake:
+#   - Use a **linear or trajectory PSF** (length/angle from EXIF/gyroscope or visual estimate).
+#   - Start with short kernels; increase length gradually to avoid artifacts.
+# - Color strategy:
+#   - Deconvolve **luminance** (grayscale) or **per‑channel** and then recombine; beware of color shifts.
+# - Scale & sampling:
+#   - Match PSF **pixel size/NA/wavelength** to acquisition; resample if needed to avoid mismatch.
+# - Validation:
+#   - Watch for **ringing/halos** around edges; compare edges and small features to raw data.
+#   - Use a small **ROI pilot run** to tune parameters before batch processing.
+# - Performance:
+#   - Prefer **FFT‑based** convolution; crop/pyramid for very large images.
+#   - Batch process with fixed params for reproducibility; record PSF and settings with outputs.
+# - When PSF is unknown:
+#   - Try a **range of plausible PSFs**; pick the one minimizing artifacts (sharper edges, no halos).
+#   - If severe/complex blur, consider adding a separate **PSF estimation** step before this tool.
+# """
+
+
+# [[tools]]
+# function = "copilotj.multiagent.py_tools.super_resolution_tool"
+# description = """
+# Upscale and enhance images using deep learning SR models (e.g., ESPCN, EDSR, RCAN, SRGAN/Real-ESRGAN, SwinIR). Supports 2×–4× (and higher when model allows), with tiling for large images.
+
+# **Tags**: image_enhancement, super_resolution
+
+# **Tips**:
+# - Choose model by need:
+#   - **EDSR/RCAN/SwinIR** → high-fidelity restoration; good for scientific images.
+#   - **ESPCN** → lightweight, real-time 2× SR.
+#   - **Real-ESRGAN/SRGAN** → perceptual quality; may hallucinate details—avoid for measurements.
+# - Scale & metadata:
+#   - Match requested **scale factor** (2×/3×/4×) to downstream analysis; update pixel size metadata after SR.
+#   - Avoid chaining upscales (e.g., 2× then 2×); prefer a single native 4× model.
+# - Pre/post-processing:
+#   - **Denoise** or correct illumination first; heavy noise degrades SR.
+#   - For microscopy, consider mild **deconvolution before SR** to respect optical PSF.
+#   - After SR, use subtle sharpening only if needed—don't double-sharpen.
+# - Scientific caution:
+#   - SR can create **hallucinated structures**. Use for **visualization** unless validated against ground truth.
+#   - For quantification, validate on a **calibration phantom** or simulated down/up pairs.
+# - Color & channels:
+#   - Prefer **luminance-only SR** for natural images; for microscopy, process **per-channel** consistently.
+#   - Keep dtype/range consistent; clamp outputs to valid ranges.
+# - Large images:
+#   - Enable **tiling/overlap** to avoid seams; keep enough overlap to hide borders.
+#   - Use GPU if available; for CPU paths, reduce tile size to manage memory.
+# - Robustness:
+#   - If input is JPEG/compressed, consider **deblocking** or use models trained for degradations (Real-ESRGAN).
+#   - Downscale a small **ROI** and A/B test vs **bicubic** baseline to confirm real gains.
+# - Reproducibility:
+#   - Log **model name/version, scale, tile size, overlap, seed** (for GAN variants), and pre/post steps.
+# """
+
+# [[tools]]
+# function = ""
+# description = """
+# **Tags**: plotting
+#
+# **Tips**:
+# - Supports multiple plotting backends for static and interactive visualizations
+# - Static (publication-ready): matplotlib, seaborn
+# - Interactive (exploration/web): plotly, altair, holoviews
+# - Lightweight web/SVG: pygal
+# - Large datasets: plotly-resampler
+# """
+#
+# tool_usage = [
+#   matplotlib:
+#     when: Precise, publication-ready static plots; full customization
+#     install: usually preinstalled in scientific Python; else `pip install matplotlib`
+#     example:
+#       import matplotlib as mpl, matplotlib.pyplot as plt
+#       mpl.rcParams.update({"figure.figsize": (4.5,3.2), "savefig.dpi": 300, "savefig.bbox": "tight"})
+#       fig, ax = plt.subplots()
+#       ax.scatter(df["x"], df["y"], s=10, alpha=0.8, rasterized=(len(df)>1e5))
+#       ax.set(title="Area vs Circularity", xlabel="Area (µm²)", ylabel="Circularity")
+#       fig.savefig("figs/mpl_scatter.pdf"); fig.savefig("figs/mpl_scatter.png")
+#
+#   seaborn:
+#     when: Quick, beautiful statistical plots (box/violin/hist/heatmap)
+#     install: usually preinstalled in scientific Python; else `pip install seaborn`
+#     example:
+#       import seaborn as sns
+#       sns.set_theme(context="paper", style="whitegrid", palette="colorblind")
+#       ax = sns.boxplot(data=df, x="group", y="y")
+#       sns.stripplot(data=df, x="group", y="y", dodge=True, alpha=0.5, size=3)
+#       ax.figure.savefig("figs/sns_box.png", dpi=300, bbox_inches="tight")
+#
+#   plotly:
+#     when: Interactive, web-friendly charts with hover/zoom; HTML export
+#     install: `pip install plotly` (+ static export `pip install kaleido`)
+#     example:
+#       import plotly.express as px
+#       fig = px.scatter(df, x="x", y="y", color="group", title="Interactive scatter")
+#       fig.write_html("figs/plotly_scatter.html")
+#       # optional static: fig.write_image("figs/plotly_scatter.png", width=900, height=640)
+#
+#   altair:
+#     when: Concise grammar-of-graphics; interactive statistical plots
+#     install: `pip install altair`
+#     example:
+#       import altair as alt
+#       chart = (alt.Chart(df).mark_point().encode(
+#           x="x:Q", y="y:Q", color="group:N", tooltip=["x","y","group"]
+#       ).properties(width=450, height=320, title="Altair scatter").interactive())
+#       chart.save("figs/altair_scatter.html")
+#
+#   holoviews:
+#     when: High-level composition, linked views, dashboards (with Bokeh)
+#     install: `pip install holoviews bokeh`
+#     example:
+#       import holoviews as hv; hv.extension("bokeh")
+#       pts = hv.Points(df, kdims=["x","y"], vdims=["group"]).opts(color="group", size=5, width=450, height=320)
+#       layout = pts
+#       hv.save(layout, "figs/holoviews_layout.html")
+#
+#   pygal:
+#     when: Lightweight, scalable SVG charts for dashboards/web embedding
+#     install: `pip install pygal`
+#     example:
+#       import pygal
+#       bar = pygal.Bar(show_legend=False, title="SVG bar")
+#       for g, sub in df.groupby("group"):
+#           bar.add(g, float(sub["y"].mean()))
+#       bar.render_to_file("figs/pygal_bar.svg")
+#
+#   plotly-resampler:
+#     when: Millions of points; responsive interactive zoom/hover
+#     install: `pip install plotly-resampler`
+#     example:
+#       from plotly_resampler import FigureResampler
+#       import plotly.graph_objects as go
+#       fig = FigureResampler(go.Figure())
+#       fig.add_trace(go.Scattergl(name="all"), hf_x=df["x"].values, hf_y=df["y"].values)
+#       fig.update_layout(title="High-frequency (resampled)")
+#       fig.write_html("figs/plotly_resampler.html")
+#
+#   statannotations (optional, for significance on box/bar):
+#     when: Add significance bars/stars using built-in tests
+#     install: `pip install statannotations`
+#     example:
+#       import seaborn as sns, matplotlib.pyplot as plt
+#       from statannotations.Annotator import Annotator
+#       ax = sns.boxplot(data=df, x="group", y="y")
+#       pairs = [("ctrl","drugA")]
+#       annot = Annotator(ax, pairs, data=df, x="group", y="y")
+#       annot.configure(test="t-test_ind", text_format="star", loc="outside").apply_and_annotate()
+#       ax.figure.savefig("figs/box_with_sig.png", dpi=300, bbox_inches="tight")
+# ]

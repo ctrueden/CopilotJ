@@ -1,0 +1,7 @@
+# Service providers for ComponentNode creation
+
+copilotj.awt.window.Ij2ConsoleWindow$Provider
+copilotj.awt.window.IjGenericDialog$Provider
+copilotj.awt.window.IjImage$Provider
+copilotj.awt.window.IjImageJ$Provider
+copilotj.awt.window.IjTextWindow$Provider

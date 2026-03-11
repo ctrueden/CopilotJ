@@ -1,0 +1,43 @@
+# application
+uploads/
+
+# python
+.venv/
+__pycache__/
+
+# java
+.settings/
+target/
+.classpath
+.factorypath
+.project
+*.csv
+
+# frontend
+node_modules
+dist
+dist-ssr
+npm-debug.log*
+pnpm-debug.log*
+
+# misc
+*.local
+*.log
+*.temp.*
+.DS_Store
+.direnv/
+.coverage*
+coverage*
+temp/
+knowledge_bank/index/registry.jsonl
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

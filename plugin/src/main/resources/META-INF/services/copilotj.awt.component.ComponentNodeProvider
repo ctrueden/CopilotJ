@@ -1,0 +1,13 @@
+# Service providers for ComponentNode creation
+
+copilotj.awt.container.UnknownContainerNode$Provider # put at the top to accelerate finding
+
+copilotj.awt.component.ButtonNode$Provider
+copilotj.awt.component.CanvasNode$Provider
+copilotj.awt.component.CheckboxNode$Provider
+copilotj.awt.component.ChoiceNode$Provider
+copilotj.awt.component.LabelNode$Provider
+copilotj.awt.component.ListNode$Provider
+copilotj.awt.component.ScrollbarNode$Provider
+copilotj.awt.component.TextFieldNode$Provider
+copilotj.awt.component.TextAreaNode$Provider

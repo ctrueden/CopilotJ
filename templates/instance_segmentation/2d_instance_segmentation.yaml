@@ -1,0 +1,58 @@
+# BiaPy 2D Instance Segmentation Template
+# This template is for 2D instance segmentation tasks
+
+# System configuration
+SYSTEM:
+  SEED: 0
+  GPU: "0"
+  NUM_WORKERS: 12
+
+# Model configuration
+MODEL:
+  ARCHITECTURE: "unet"
+  LOAD_CHECKPOINT: false
+
+# Data configuration
+DATA:
+  PATCH_SIZE: (256, 256, 1)
+  TRAIN:
+    PATH: "/path/to/data"
+    GT_PATH: "/path/to/data"
+  VAL:
+    FROM_TRAIN: true
+    SPLIT_TRAIN: 0.1
+  TEST:
+    PATH: "/path/to/data"
+    GT_PATH: "/path/to/data"
+    LOAD_GT: true
+    PADDING: (32, 32)
+
+# Training configuration
+TRAIN:
+  ENABLE: true
+  EPOCHS: 100
+  PATIENCE: 50
+  BATCH_SIZE: 8
+  OPTIMIZER: "ADAMW"
+  LR: 1e-4
+  METRICS: ["iou"]
+
+# Test configuration
+TEST:
+  ENABLE: true
+  METRICS: ["iou"]
+  MATCHING_STATS: true
+
+# Augmentation configuration
+AUGMENTOR:
+  ENABLE: false
+  DROPOUT: false
+  GRIDMASK: false
+  CUTBLUR: false
+  CUTNOISE: false
+  MOTION_BLUR: false
+
+# Paths configuration
+PATHS:
+  CHECKPOINT_FILE: ""
+  RESULT_DIR: results
