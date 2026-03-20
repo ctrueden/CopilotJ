@@ -5,8 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 <script setup lang="ts">
-import { marked } from "marked";
+import "highlight.js/styles/github-dark.css";
+
 import { computed } from "vue";
+
+import { createMarkdownRenderer } from "../lib/markdown";
 
 const props = withDefaults(
   defineProps<{
@@ -17,6 +20,7 @@ const props = withDefaults(
 );
 
 const RE_AT = /^@((\w*)|"[\w ]+") /;
+const markdown = createMarkdownRenderer();
 
 const hasAt = computed(() => RE_AT.test(props.value));
 
@@ -40,7 +44,7 @@ const valueWithoutAt = computed(() => {
 });
 
 const output = computed(() => {
-  const html = marked(valueWithoutAt.value) as string;
+  const html = markdown.parse(valueWithoutAt.value) as string;
   return html.replace(/^<p>(.*?)<\/p>/, "$1");
 });
 </script>
@@ -58,6 +62,19 @@ const output = computed(() => {
       class="inline-block px-3 py-1 mr-2 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium"
       >@{{ atPrefix }}</span
     >
-    <p v-html="output" class="inline" />
+    <div v-html="output" class="inline" />
   </article>
 </template>
+
+<style>
+.prose pre code.hljs {
+  background: transparent;
+  padding: 0;
+}
+
+.prose :not(pre) > code.hljs,
+.prose :not(pre) > code {
+  border-radius: 0.375rem;
+  padding: 0.15rem 0.35rem;
+}
+</style>

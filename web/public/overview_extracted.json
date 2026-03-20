@@ -1,0 +1,48 @@
+{
+  "summaryPoints": [
+    "Conversational multi-agent bioimage analysis for ImageJ and beyond.",
+    "Natural-language requests are translated into executable and verifiable workflows.",
+    "ImageJ/Fiji, Python scientific tools, and deep-learning models are orchestrated in one system."
+  ],
+  "summaryPointsEn": [
+    "Conversational multi-agent bioimage analysis for ImageJ and beyond.",
+    "Natural-language requests are translated into executable and verifiable workflows.",
+    "ImageJ/Fiji, Python scientific tools, and deep-learning models are orchestrated in one system."
+  ],
+  "background": {
+    "title": "Background",
+    "icon": "book",
+    "items": [
+      "Quantitative bioimage analysis is essential but remains difficult to scale with manual ImageJ workflows and macro scripting.",
+      "Researchers face fragmented documentation, parameter-heavy tools, and limited access to modern Python and deep-learning methods."
+    ],
+    "items_en": [
+      "Quantitative bioimage analysis is essential but remains difficult to scale with manual ImageJ workflows and macro scripting.",
+      "Researchers face fragmented documentation, parameter-heavy tools, and limited access to modern Python and deep-learning methods."
+    ]
+  },
+  "we_present": {
+    "title": "We Present",
+    "icon": "lightbulb",
+    "items": [
+      "CopilotJ is a conversational multi-agent system that plans, executes, validates, and documents ImageJ-centric workflows.",
+      "It supports reproducible workflow reuse, batch execution, human-in-the-loop interaction, and deep-learning extensions."
+    ],
+    "items_en": [
+      "CopilotJ is a conversational multi-agent system that plans, executes, validates, and documents ImageJ-centric workflows.",
+      "It supports reproducible workflow reuse, batch execution, human-in-the-loop interaction, and deep-learning extensions."
+    ]
+  },
+  "challenges": {
+    "title": "Challenges",
+    "icon": "alert",
+    "items": [
+      "ImageJ analysis often depends on user expertise, fragmented plugin knowledge, and repeated trial-and-error.",
+      "Extending workflows with external Python or deep-learning tools usually increases engineering overhead for end users."
+    ],
+    "items_en": [
+      "ImageJ analysis often depends on user expertise, fragmented plugin knowledge, and repeated trial-and-error.",
+      "Extending workflows with external Python or deep-learning tools usually increases engineering overhead for end users."
+    ]
+  }
+}

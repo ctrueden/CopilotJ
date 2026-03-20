@@ -43,16 +43,16 @@ class Server:
         app = web.Application()
 
         r = app.router
-        r.add_get("/ping", _on_ping)
-        r.add_get("/plugins", self._bridge.on_plugin_connect)
-        r.add_post("/plugins/events", self._bridge.on_forward_event)
-        r.add_post("/threads", self._threads.new_thread)
-        r.add_delete("/threads/{thread_id}", self._threads.del_thread)
-        r.add_post("/threads/{thread_id}/posts", self._threads.new_thread_post)
-        r.add_get("/threads/{thread_id}/config", self._threads.get_thread_config)
-        r.add_post("/threads/{thread_id}/config", self._threads.update_thread_config)
-        r.add_post("/threads/{thread_id}/optimize-prompt", self._threads.optimize_prompt_endpoint)
-        r.add_post("/optimize-prompt", self._threads.optimize_prompt_standalone)
+        r.add_get("/api/ping", _on_ping)
+        r.add_get("/api/plugins", self._bridge.on_plugin_connect)
+        r.add_post("/api/plugins/events", self._bridge.on_forward_event)
+        r.add_post("/api/threads", self._threads.new_thread)
+        r.add_delete("/api/threads/{thread_id}", self._threads.del_thread)
+        r.add_post("/api/threads/{thread_id}/posts", self._threads.new_thread_post)
+        r.add_get("/api/threads/{thread_id}/config", self._threads.get_thread_config)
+        r.add_post("/api/threads/{thread_id}/config", self._threads.update_thread_config)
+        r.add_post("/api/threads/{thread_id}/optimize-prompt", self._threads.optimize_prompt_endpoint)
+        r.add_post("/api/optimize-prompt", self._threads.optimize_prompt_standalone)
 
         cors = aiohttp_cors.setup(  # TODO: configure CORS
             app,

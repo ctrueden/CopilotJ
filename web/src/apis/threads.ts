@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const BASE_URL = "http://127.0.0.1:8786";
+import { baseUrl } from "./base.ts";
 
 interface Payload<T extends string, K> {
   type: T;
@@ -93,7 +93,7 @@ export interface OptimizePromptResponse {
 }
 
 export async function newThread(config: ThreadConfigQuery): Promise<NewThread> {
-  const url = `${BASE_URL}/threads`;
+  const url = `${baseUrl}/threads`;
   const options = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ export async function* newThreadPost(
   prompt: string | boolean,
   signal?: AbortSignal,
 ): AsyncGenerator<TypedMessage> {
-  const url = `${BASE_URL}/threads/${threadId}/posts`;
+  const url = `${baseUrl}/threads/${threadId}/posts`;
   const options: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -122,7 +122,7 @@ export async function* newThreadPost(
 }
 
 export async function getThreadConfig(threadId: string): Promise<ThreadConfig> {
-  const url = `${BASE_URL}/threads/${threadId}/config`;
+  const url = `${baseUrl}/threads/${threadId}/config`;
   const options = { method: "GET", headers: { "Content-Type": "application/json" } };
 
   const response = await fetch(url, options);
@@ -133,7 +133,7 @@ export async function getThreadConfig(threadId: string): Promise<ThreadConfig> {
 }
 
 export async function updateThreadConfig(threadId: string, config: ThreadConfigQuery): Promise<ThreadConfig> {
-  const url = `${BASE_URL}/threads/${threadId}/config`;
+  const url = `${baseUrl}/threads/${threadId}/config`;
   const options = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -148,7 +148,7 @@ export async function updateThreadConfig(threadId: string, config: ThreadConfigQ
 }
 
 export async function deleteThread(threadId: string): Promise<void> {
-  const url = `${BASE_URL}/threads/${threadId}`;
+  const url = `${baseUrl}/threads/${threadId}`;
   const options = { method: "DELETE" };
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -158,7 +158,7 @@ export async function deleteThread(threadId: string): Promise<void> {
 }
 
 export async function optimizePrompt(threadId: string, prompt: string): Promise<OptimizePromptResponse> {
-  const url = `${BASE_URL}/threads/${threadId}/optimize-prompt`;
+  const url = `${baseUrl}/threads/${threadId}/optimize-prompt`;
   const options = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -172,7 +172,7 @@ export async function optimizePrompt(threadId: string, prompt: string): Promise<
 }
 
 export async function optimizePromptBeforeThread(prompt: string): Promise<OptimizePromptResponse> {
-  const url = `${BASE_URL}/optimize-prompt`;
+  const url = `${baseUrl}/optimize-prompt`;
   const options = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
