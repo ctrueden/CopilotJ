@@ -176,17 +176,19 @@ class HTTPPluginAPI(PluginAPI):
 
     def __init__(self, server: str):
         super().__init__()
-        self.server = server
-        self.session = aiohttp.ClientSession(server, json_serialize=ujson.dumps)
+        self.server = server.rstrip("/")
+        self.session = aiohttp.ClientSession(self.server, json_serialize=ujson.dumps)
 
     @override
     async def _request[R: Response](self, client_id: uuid.UUID, data: Request[R], *, timeout: float | None = None) -> R:
         timeout = timeout or data._timeout
         request = BridgeRequest(client_id=client_id, event=data.event, data=data, timeout=timeout).model_dump_json()
         async with self.session.post(
-            "plugins/events", data=bytes(request, "utf-8"), headers={"Content-Type": "application/json"}
+            "/api/plugins/events", data=bytes(request, "utf-8"), headers={"Content-Type": "application/json"}
         ) as resp:
             respStr = await resp.text()
+            if resp.status >= 400:
+                raise Exception(f"Plugin API request failed with {resp.status}: {respStr}")
             result = BridgeResponse.model_validate_json(respStr)
             if result.err:
                 raise Exception(result.err)

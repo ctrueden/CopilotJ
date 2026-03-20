@@ -14,7 +14,7 @@ dev-plugin:
 dev-plugin-full: clean-plugin dev-plugin
 
 build-plugin: clean-plugin
-  cd plugin && mvn clean package
+  cd plugin && mvn package
 
 clean-plugin:
   cd plugin && mvn clean

@@ -6,10 +6,10 @@ SPDX-License-Identifier: Apache-2.0
 
 <script setup lang="ts">
 import { ref } from "vue";
-import Chatbox from "./components/Chatbox.vue";
-import Settings from "./components/Settings.vue";
-import Sidebar from "./components/Sidebar.vue";
-import { useSettings, useSystemState } from "./store";
+import Chatbox from "../components/Chatbox.vue";
+import Settings from "../components/Settings.vue";
+import Sidebar from "../components/Sidebar.vue";
+import { useSettings, useSystemState } from "../store";
 
 const settings = useSettings();
 const state = useSystemState();

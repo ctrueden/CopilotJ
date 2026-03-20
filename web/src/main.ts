@@ -11,6 +11,7 @@ import PrimeVue from "primevue/config";
 import ConfirmationService from "primevue/confirmationservice";
 import Tooltip from "primevue/tooltip";
 import { createApp } from "vue";
+import { createRouter, createWebHashHistory } from "vue-router";
 import App from "./App.vue";
 import "./style.css";
 
@@ -18,6 +19,22 @@ const app = createApp(App);
 
 const pinia = createPinia();
 app.use(pinia);
+
+const baseRoutes = [
+  { path: "/", component: () => import("./views/Home.vue") },
+  { path: "/manual", component: () => import("./views/Manual.vue") },
+  { path: "/about", component: () => import("./views/About.vue") },
+];
+
+const routes = import.meta.env.VITE_DISABLE_CHAT
+  ? baseRoutes
+  : [...baseRoutes, { path: "/chat", component: () => import("./views/Chat.vue") }];
+
+export const router = createRouter({
+  history: createWebHashHistory(),
+  routes,
+});
+app.use(router);
 
 const CopilotjPreset = definePreset(Aura, {
   semantic: {

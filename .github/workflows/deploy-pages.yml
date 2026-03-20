@@ -39,6 +39,8 @@ jobs:
           pnpm install
 
       - name: Build with Vite
+        env:
+          VITE_DISABLE_CHAT: true
         run: |
           cd web
           pnpm run build

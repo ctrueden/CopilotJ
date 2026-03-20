@@ -90,7 +90,10 @@ class Connection {
   private WebSocketClient configure() {
     try {
       final String addr = server.replace("http://", "ws://").replace("https://", "wss://");
-      final URI uri = new URI(addr + "/plugins");
+      if (addr.endsWith("/")) {
+        addr.substring(0, addr.length() - 1);
+      }
+      final URI uri = new URI(addr + "/api/plugins");
 
       return new WebSocketClient(uri) {
         @Override

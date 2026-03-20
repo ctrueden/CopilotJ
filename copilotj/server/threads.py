@@ -385,10 +385,7 @@ class Threads:
             # Delegate to LeaderAgent for optimization
             optimized = await thread._agent.optimize_prompt(prompt_data.prompt)
 
-            return web.json_response({
-                "original": prompt_data.prompt,
-                "optimized": optimized
-            })
+            return web.json_response({"original": prompt_data.prompt, "optimized": optimized})
         except pydantic.ValidationError as e:
             return web.Response(status=400, text=f"Invalid data: {e}")
         except Exception as e:
@@ -413,8 +410,8 @@ class Threads:
             # Create a temporary agent instance for optimization
             # Use default model from settings
             apis = HTTPPluginAPI("http://127.0.0.1:8786")
-            temp_agent = LeaderDriven(apis=apis)
-
+            client = apis.attach_dev_client()  # TODO: should be removed or made configurable
+            temp_agent = LeaderDriven(apis=client)
             # Optimize the prompt (without chat history context)
             optimized = await temp_agent.optimize_prompt(prompt_data.prompt)
 
@@ -422,10 +419,7 @@ class Threads:
             temp_agent.abort()
             await apis.close()
 
-            return web.json_response({
-                "original": prompt_data.prompt,
-                "optimized": optimized
-            })
+            return web.json_response({"original": prompt_data.prompt, "optimized": optimized})
         except pydantic.ValidationError as e:
             return web.Response(status=400, text=f"Invalid data: {e}")
         except Exception as e:
